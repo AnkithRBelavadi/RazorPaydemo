@@ -96,7 +96,7 @@ def verify_payment(data: PaymentVerifyRequest):
 # @app.get("/check-order")
 # def check_order():
 #     razorpay.Client
-#     payments = razorpay_client.order.payments("order_QI69nW0FJ5CVHl")
+#     payments = razorpay_client.order.payments("orderid")
 #     payment_str = json.dumps(payments,indent=4)
 #     print(payment_str)
 #     return payment_str
