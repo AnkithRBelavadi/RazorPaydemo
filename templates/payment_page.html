@@ -67,6 +67,22 @@
                 };
 
                 const rzp1 = new Razorpay(options);
+
+                rzp1.on('payment.failed', function (response) {
+                    alert("Payment failed. Reason: " + response.error.description);
+                
+                    // Optionally send this info to backend
+                    fetch('/log-failed-payment/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            error: response.error
+                        })
+                    });
+                });
+                
                 rzp1.open();
             })
             .catch(error => {
