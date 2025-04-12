@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay Now</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+    <h1>Order Details</h1>
+    <div id="order-details">
+        <p>Amount: ₹500</p>
+        <button id="pay-button">Pay Now</button>
+    </div>
+
+    <script>
+        document.getElementById('pay-button').onclick = function () {
+            const orderData = {
+                amount: 500  // Razorpay needs amount in paisa
+            };
+
+            fetch('/create-order/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(orderData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const options = {
+                    "key": "{{ razorpay_key_id }}",  // Replace with real key if not templated
+                    "amount": data.amount,
+                    "currency": data.currency,
+                    "order_id": data.order_id,
+                    "handler": function (response) {
+                        alert("Payment Successful. Transaction ID: " + response.razorpay_payment_id);
+
+                        // Send payment verification to backend
+                        fetch('/verify-payment/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            console.log("Payment details from backend:", data);
+                        })
+                        .catch(err => {
+                            console.error("Error verifying payment:", err);
+                        });
+                    },
+                    "prefill": {
+                        "name": "Customer Name",
+                        "email": "customer@example.com",
+                        "contact": "9876543210"
+                    },
+                    "theme": {
+                        "color": "#F37254"
+                    }
+                };
+
+                const rzp1 = new Razorpay(options);
+                rzp1.open();
+            })
+            .catch(error => {
+                alert("Error creating order. Please try again.");
+                console.error(error);
+            });
+        }
+    </script>
+</body>
+</html>
